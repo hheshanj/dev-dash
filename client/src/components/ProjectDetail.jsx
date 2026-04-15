@@ -113,7 +113,7 @@ export default function ProjectDetail({ project, onClose, onAnalysisComplete }) 
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
           >
             <RefreshCw size={13} className={isAnalyzing ? 'animate-spin' : ''} />
-            {isAnalyzing ? 'Analyzing…' : 'Re-Analyze'}
+            {isAnalyzing ? 'Analyzing...' : 'Re-Analyze'}
           </button>
           <button
             onClick={onClose}
@@ -236,7 +236,7 @@ export default function ProjectDetail({ project, onClose, onAnalysisComplete }) 
           <div className="absolute inset-0 bg-[#1a1d27]/60 backdrop-blur-sm flex items-center justify-center rounded">
             <div className="flex flex-col items-center gap-3">
               <RefreshCw size={28} className="text-indigo-400 animate-spin" />
-              <p className="text-sm text-slate-400">Analyzing with Gemini…</p>
+              <p className="text-sm text-slate-400">Analyzing with AI...</p>
             </div>
           </div>
         )}

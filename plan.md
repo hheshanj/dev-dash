@@ -199,8 +199,8 @@ CREATE TABLE IF NOT EXISTS analyses (
 
 1. **Massive Repositories / Token Limits:** Some repos have thousands of commits. The `git.js` service must heavily prune data (e.g., only send the last 20-30 commits, omit huge diffs like minified files or `node_modules`).
 2. **Missing Antigravity Logs:** The AI must degrade gracefully if a project has never been worked on via the AI assistant. It should still analyze based on Git history alone.
-3. **Uncommitted Work:** If a developer has massive uncommitted changes, they won't be in the git log. The scanner should check `git status` and feed raw `git diff` of uncommitted files to Gemini just in case.
-4. **Rate Limiting:** Protect the free-tier Gemini API by preventing users from clicking "Analyze" on 50 repos simultaneously (implement a queue or simple disable state).
+3. **Uncommitted Work:** If a developer has massive uncommitted changes, they won't be in the git log. The scanner should check `git status` and feed raw `git diff` of uncommitted files to the AI just in case.
+4. **Rate Limiting:** Protect the AI API by preventing users from clicking "Analyze" on 50 repos simultaneously (implement a queue or simple disable state).
 5. **Corrupt Chat Logs:** File reading in `CHAT_HISTORY_PATH` must be wrapped in `try/catch` as external tools might be actively writing to those files.
 
 ---
@@ -210,4 +210,20 @@ CREATE TABLE IF NOT EXISTS analyses (
 - **Auto-Analyze on File Change:** Watch the `REPOS_PATH` and silently queue analyses in the background when active work stops.
 - **Timeline Graph:** Render a burnout or activity chart across all repositories.
 - **Documentation Generation:** Automatically click a button to generate a `README.md` or `HANDOVER.md` based on the latest analysis.
+- **Cross-Project Search:** Ask a chatbot, "Which project was I using Tailwind and Supabase in?" and have it search the SQLite database.
+
+---
+
+## Phase 5: Nvidia AI Service
+**Goal:** Integrate the Nvidia NIM API to generate structured summaries.
+- [x] Create `server/services/nvidia.js`.
+- [x] Initialize the `openai` client using the API key.
+- [x] Define the exact `System Prompt` detailed in `plan.md` to force a specific structured JSON output.
+- [x] Write the `analyzeProject(gitContext, chatContext)` function:
+    - [x] Combine Git and Chat contexts.
+    - [x] Send request to Nvidia NIM.
+    - [x] Attempt to parse the resulting text string as `JSON.parse()`.
+
+## Phase 6: API Routes & Orchestration
+- [x] Pass context to `nvidia.js`.
 - **Cross-Project Search:** Ask a chatbot, "Which project was I using Tailwind and Supabase in?" and have it search the SQLite database.

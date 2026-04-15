@@ -13,7 +13,7 @@ This document breaks down the development of the `devdash` project into granular
 - [ ] Install core backend dependencies: `npm install express cors dotenv better-sqlite3 simple-git @google/genai`
 - [ ] Install dev dependencies: `npm install --save-dev nodemon concurrently`
 - [ ] Create the `.env` file and `.env.example` file.
-    - [ ] Add `GEMINI_API_KEY`, `PORT=3001`, `REPOS_PATH`, and `CHAT_HISTORY_PATH`.
+    - [ ] Add `NVIDIA_API_KEY`, `NVIDIA_MODEL`, `PORT=3001`, `REPOS_PATH`, and `CHAT_HISTORY_PATH`.
 - [ ] Create the Server directory structure:
     - [ ] `server/index.js` (entry point)
     - [ ] `server/db/`
@@ -31,7 +31,7 @@ This document breaks down the development of the `devdash` project into granular
 - [ ] Create `server/db/database.js`.
 - [ ] Initialize the `better-sqlite3` connection.
 - [ ] Execute `CREATE TABLE` statements for the `projects` table (storing repo metadata).
-- [ ] Execute `CREATE TABLE` statements for the `analyses` table (storing Gemini JSON responses).
+- [ ] Execute `CREATE TABLE` statements for the `analyses` table (storing AI JSON responses).
 - [ ] Write helper functions to:
     - [ ] Insert/Update a project (`upsertProject`).
     - [ ] Insert a new analysis (`saveAnalysis`).
@@ -67,18 +67,18 @@ This document breaks down the development of the `devdash` project into granular
 
 ---
 
-## Phase 5: Gemini AI Service
+## Phase 5: Nvidia AI Service
 
-**Goal:** Integrate the Google GenAI SDK to generate structured summaries.
+**Goal:** Integrate the Nvidia NIM API to generate structured summaries.
 
-- [x] Create `server/services/gemini.js`.
-- [x] Initialize the `@google/genai` client using the API key.
+- [x] Create `server/services/nvidia.js`.
+- [x] Initialize the `openai` client using the API key.
 - [x] Define the exact `System Prompt` detailed in `plan.md` to force a specific structured JSON output.
 - [x] Write the `analyzeProject(gitContext, chatContext)` function:
     - [x] Combine Git and Chat contexts.
-    - [x] Send request to Gemini.
+    - [x] Send request to Nvidia NIM.
     - [x] Attempt to parse the resulting text string as `JSON.parse()`.
-    - [x] Handle potential parsing errors if Gemini adds markdown codeblocks (e.g., strip ```json \n).
+    - [x] Handle potential parsing errors if the AI adds markdown codeblocks.
 
 ---
 
@@ -94,7 +94,7 @@ This document breaks down the development of the `devdash` project into granular
 - [x] Implement `POST /api/projects/:id/analyze`:
     - [x] Look up the repo path.
     - [x] Call `git.js` and `chatlog.js` to gather context.
-    - [x] Pass context to `gemini.js`.
+    - [x] Pass context to `nvidia.js`.
     - [x] Save the resulting JSON to the `analyses` table in DB.
     - [x] Return the result to the client.
 - [x] Implement `GET /api/projects/:id`:

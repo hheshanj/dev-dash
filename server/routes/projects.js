@@ -3,7 +3,7 @@ const router = express.Router();
 const { scanRepos } = require('../services/scanRepos');
 const { getRepoInfo } = require('../services/git');
 const { getChatContext } = require('../services/chatlog');
-const { analyzeProject } = require('../services/gemini');
+const { analyzeProject } = require('../services/nvidia');
 const {
   upsertProject,
   saveAnalysis,
@@ -53,7 +53,7 @@ router.get('/:id', (req, res) => {
 
 /**
  * POST /api/projects/:id/analyze
- * Triggers a fresh Gemini analysis for the project.
+ * Triggers a fresh AI analysis for the project.
  */
 router.post('/:id/analyze', async (req, res) => {
   const { id } = req.params;
@@ -72,8 +72,9 @@ router.post('/:id/analyze', async (req, res) => {
     
     res.json({ success: true, analysis: analysisResult });
   } catch (error) {
-    console.error(`Error in POST /api/projects/${id}/analyze:`, error);
-    res.status(500).json({ error: 'Analysis failed', details: error.message });
+    console.error(`Error in POST /api/projects/${id}/analyze:`, error.message);
+    const status = error.status || 500;
+    res.status(status).json({ error: error.message || 'Analysis failed' });
   }
 });
 
