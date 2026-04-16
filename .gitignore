@@ -24,5 +24,6 @@ Thumbs.db
 .idea/
 plan.md
 server/db/devdash.db
-server/db/devdash.db
 files
+dist
+.env

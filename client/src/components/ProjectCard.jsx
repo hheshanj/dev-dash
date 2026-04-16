@@ -1,4 +1,4 @@
-import { FolderGit2, Clock } from 'lucide-react'
+import { FolderGit2, Clock, Star } from 'lucide-react'
 import StatusBadge from './StatusBadge'
 
 function ResumabilityDots({ score }) {
@@ -30,7 +30,20 @@ function timeAgo(dateString) {
   return `${Math.floor(diffDays / 365)}y ago`
 }
 
-export default function ProjectCard({ project, isSelected, onSelect }) {
+function HighlightedText({ text, query }) {
+  if (!query) return <span>{text}</span>
+  const idx = text.toLowerCase().indexOf(query.toLowerCase())
+  if (idx === -1) return <span>{text}</span>
+  return (
+    <span>
+      {text.slice(0, idx)}
+      <mark className="bg-indigo-500/30 text-indigo-200 rounded outline-none">{text.slice(idx, idx + query.length)}</mark>
+      {text.slice(idx + query.length)}
+    </span>
+  )
+}
+
+export default function ProjectCard({ project, isSelected, onSelect, onTogglePin, searchQuery }) {
   const analysis = project.analysis?.analysis_json || null
   const status = analysis?.status || 'unknown'
   const score = analysis?.resumability_score || null
@@ -52,10 +65,22 @@ export default function ProjectCard({ project, isSelected, onSelect }) {
         <div className="flex items-center gap-2 min-w-0">
           <FolderGit2 size={15} className="text-indigo-400 shrink-0" />
           <h3 className="text-sm font-semibold text-slate-100 truncate group-hover:text-white">
-            {project.name}
+            <HighlightedText text={project.name} query={searchQuery} />
           </h3>
         </div>
-        <StatusBadge status={status} />
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onTogglePin(project.id, !project.pinned);
+            }}
+            className={`p-1 rounded transition-colors ${project.pinned ? 'text-amber-400 hover:text-amber-300 bg-amber-400/10' : 'text-slate-600 hover:text-indigo-400 hover:bg-[#2a2d3a]'}`}
+            title={project.pinned ? "Unpin project" : "Pin project"}
+          >
+            <Star size={13} fill={project.pinned ? 'currentColor' : 'none'} />
+          </button>
+          <StatusBadge status={status} />
+        </div>
       </div>
 
       {/* Summary or empty state */}
@@ -70,9 +95,9 @@ export default function ProjectCard({ project, isSelected, onSelect }) {
         ) : (
           <span className="text-xs text-slate-600">Not analyzed</span>
         )}
-        <div className="flex items-center gap-1 text-xs text-slate-500">
-          <Clock size={11} />
-          <span>{timeAgo(project.last_analyzed)}</span>
+        <div className="flex items-center gap-1 text-xs">
+          <Clock size={11} className={!project.last_analyzed ? 'text-slate-600' : 'text-slate-500'} />
+          <span className={!project.last_analyzed ? 'text-slate-600 italic' : 'text-slate-500'}>{timeAgo(project.last_analyzed)}</span>
         </div>
       </div>
     </button>

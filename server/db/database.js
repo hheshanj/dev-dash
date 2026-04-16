@@ -1,7 +1,14 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
-const dbPath = path.resolve(__dirname, 'devdash.db');
+// In Electron production, we pass a specific DB_DIR in main.js
+const dbDir = process.env.DB_DIR || __dirname;
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
+const dbPath = path.resolve(dbDir, 'devdash.db');
 const db = new Database(dbPath);
 
 // Initialize schema
@@ -21,6 +28,38 @@ db.exec(`
     FOREIGN KEY (project_id) REFERENCES projects(id)
   );
 `);
+
+// Simple schema migrations
+try { db.exec("ALTER TABLE projects ADD COLUMN pinned BOOLEAN DEFAULT 0;"); } catch (e) {}
+try { db.exec("ALTER TABLE projects ADD COLUMN notes TEXT DEFAULT '';"); } catch (e) {}
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
+`);
+
+/**
+ * Settings Management
+ */
+function getSetting(key) {
+  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key);
+  return row ? row.value : null;
+}
+
+function setSetting(key, value) {
+  const stmt = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value');
+  stmt.run(key, value);
+}
+
+function getAllSettings() {
+  const rows = db.prepare('SELECT key, value FROM settings').all();
+  return rows.reduce((acc, row) => {
+    acc[row.key] = row.value;
+    return acc;
+  }, {});
+}
 
 /**
  * Inserts or updates a project by its path.
@@ -83,7 +122,7 @@ function getAllProjects() {
              ROW_NUMBER() OVER (PARTITION BY project_id ORDER BY created_at DESC) AS rn
       FROM analyses
     ) a ON a.project_id = p.id AND a.rn = 1
-    ORDER BY p.last_analyzed DESC
+    ORDER BY p.pinned DESC, p.last_analyzed DESC
   `);
   return stmt.all().map(row => ({
     ...row,
@@ -100,11 +139,26 @@ function getProjectById(id) {
   return stmt.get(id);
 }
 
+function updateProjectPin(id, pinned) {
+  const stmt = db.prepare('UPDATE projects SET pinned = ? WHERE id = ?');
+  stmt.run(pinned ? 1 : 0, id);
+}
+
+function updateProjectNotes(id, notes) {
+  const stmt = db.prepare('UPDATE projects SET notes = ? WHERE id = ?');
+  stmt.run(notes, id);
+}
+
 module.exports = {
   db,
   upsertProject,
   saveAnalysis,
   getLatestAnalysis,
   getAllProjects,
-  getProjectById
+  getProjectById,
+  updateProjectPin,
+  updateProjectNotes,
+  getSetting,
+  setSetting,
+  getAllSettings
 };
