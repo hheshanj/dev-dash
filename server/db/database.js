@@ -31,8 +31,10 @@ function upsertProject(name, repoPath) {
     VALUES (?, ?)
     ON CONFLICT(path) DO UPDATE SET name = excluded.name
   `);
-  const result = stmt.run(name, repoPath);
-  return result.lastInsertRowid;
+  stmt.run(name, repoPath);
+
+  const row = db.prepare(`SELECT id FROM projects WHERE path = ?`).get(repoPath);
+  return row.id;
 }
 
 /**
@@ -73,8 +75,21 @@ function getLatestAnalysis(projectId) {
  * Returns all projects in the database.
  */
 function getAllProjects() {
-  const stmt = db.prepare(`SELECT * FROM projects ORDER BY last_analyzed DESC`);
-  return stmt.all();
+  const stmt = db.prepare(`
+    SELECT p.*, a.analysis_json
+    FROM projects p
+    LEFT JOIN (
+      SELECT project_id, analysis_json,
+             ROW_NUMBER() OVER (PARTITION BY project_id ORDER BY created_at DESC) AS rn
+      FROM analyses
+    ) a ON a.project_id = p.id AND a.rn = 1
+    ORDER BY p.last_analyzed DESC
+  `);
+  return stmt.all().map(row => ({
+    ...row,
+    analysis: row.analysis_json ? { analysis_json: JSON.parse(row.analysis_json) } : null,
+    analysis_json: undefined
+  }));
 }
 
 /**

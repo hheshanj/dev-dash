@@ -41,7 +41,7 @@ export default function Dashboard() {
       const detail = await fetchProject(project.id)
       setSelectedProject(detail)
     } catch (err) {
-      setSelectedProject(project)
+      setSelectedProject({ ...project, _fetchError: 'Failed to load project details.' })
     } finally {
       setIsLoadingDetail(false)
     }
@@ -76,7 +76,7 @@ export default function Dashboard() {
           <LayoutDashboard size={20} className="text-indigo-400" />
           <h1 className="text-base font-bold text-white tracking-tight">devdash</h1>
           <span className="text-xs px-2 py-0.5 rounded-full bg-[#2a2d3a] text-slate-400 font-medium">
-            {projects.length} repos
+            {filteredProjects.length}{filteredProjects.length !== projects.length ? ` / ${projects.length}` : ''} repos
           </span>
         </div>
         <div className="flex items-center gap-3">

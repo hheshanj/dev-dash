@@ -65,7 +65,6 @@ function sessionMentionsRepo(sessionDir, repoName) {
 
   const entries = fs.readdirSync(sessionDir);
   for (const entry of entries) {
-    // Only check metadata files for speed — they contain summaries
     if (entry.endsWith('.metadata.json')) {
       const meta = readMetadata(sessionDir, entry.replace('.metadata.json', ''));
       if (meta && meta.summary && meta.summary.toLowerCase().includes(normalizedRepo)) {
@@ -73,6 +72,18 @@ function sessionMentionsRepo(sessionDir, repoName) {
       }
     }
   }
+
+  for (const entry of entries) {
+    const isArtifact = !entry.endsWith('.metadata.json') && !entry.endsWith('.resolved') &&
+      !entry.match(/\.resolved\.\d+$/) && (entry.endsWith('.md') || entry.endsWith('.txt'));
+    if (isArtifact) {
+      const content = readArtifact(sessionDir, entry);
+      if (content && content.toLowerCase().includes(normalizedRepo)) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 

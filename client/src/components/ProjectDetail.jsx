@@ -125,12 +125,19 @@ export default function ProjectDetail({ project, onClose, onAnalysisComplete }) 
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 relative">
         {/* Error Banner */}
         {error && (
           <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
             <AlertTriangle size={14} className="shrink-0 mt-0.5" />
             <span>{error}</span>
+          </div>
+        )}
+
+        {/* Fetch Error */}
+        {project._fetchError && (
+          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+            {project._fetchError}
           </div>
         )}
 

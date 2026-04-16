@@ -21,3 +21,17 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+const { db } = require('./db/database');
+
+process.on('SIGINT', () => {
+  console.log('\nShutting down...');
+  db.close();
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('\nShutting down...');
+  db.close();
+  process.exit(0);
+});

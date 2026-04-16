@@ -14,7 +14,7 @@ const MAX_RETRIES = 3;
  * @returns {number} milliseconds to wait
  */
 function getRetryDelayMs(attempt) {
-  return Math.pow(3, attempt) * 5000;
+  return Math.min(Math.pow(2, attempt) * 1000, 8000);
 }
 
 /**
