@@ -44,18 +44,22 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
 process.on('SIGINT', () => {
   console.log('\nShutting down...');
-  db.close();
-  process.exit(0);
+  server.close(() => {
+    db.close();
+    process.exit(0);
+  });
 });
 
 process.on('SIGTERM', () => {
   console.log('\nShutting down...');
-  db.close();
-  process.exit(0);
+  server.close(() => {
+    db.close();
+    process.exit(0);
+  });
 });

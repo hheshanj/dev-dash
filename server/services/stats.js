@@ -85,49 +85,59 @@ function aggregateLanguages(repoPath) {
 
 async function getCommitStats(repoPath) {
   const git = simpleGit(repoPath);
-  const result = [];
   
   try {
-    const log = await git.log({
-      maxCount: 100,
-      format: { hash: '%H', date: '%aI', message: '%s', author: '%an' }
-    });
-    
-    const statLog = await git.log(['--stat', '--format=', '-100']);
-    
-    for (let i = 0; i < log.all?.length; i++) {
-      const commit = log.all[i];
+    const rawLog = await git.raw([
+      'log',
+      '-100',
+      '--format=COMMIT:%H|%aI|%s|%an',
+      '--shortstat'
+    ]);
+
+    if (!rawLog) return [];
+
+    const commits = [];
+    const sections = rawLog.split('COMMIT:').filter(Boolean);
+
+    for (const section of sections) {
+      const lines = section.trim().split('\n');
+      const metadata = lines[0].split('|');
+      
+      if (metadata.length < 4) continue;
+
+      const [hash, date, message, author] = metadata;
       let linesAdded = 0;
       let linesDeleted = 0;
       let filesChanged = 0;
-      
-      if (statLog.all?.[i]) {
-        const statLines = statLog.all[i].body.split('\n');
-        for (const line of statLines) {
-          const insertMatch = line.match(/(\d+) insertion/);
-          const deleteMatch = line.match(/(\d+) deletion/);
-          const fileMatch = line.match(/(\d+) file/);
-          if (insertMatch) linesAdded += parseInt(insertMatch[1], 10);
-          if (deleteMatch) linesDeleted += parseInt(deleteMatch[1], 10);
-          if (fileMatch) filesChanged += parseInt(fileMatch[1], 10);
-        }
+
+      // Look for the shortstat line (e.g., " 2 files changed, 10 insertions(+), 5 deletions(-)")
+      const statLine = lines.find(l => l.includes('changed'));
+      if (statLine) {
+        const fileMatch = statLine.match(/(\d+) file/);
+        const insertMatch = statLine.match(/(\d+) insertion/);
+        const deleteMatch = statLine.match(/(\d+) deletion/);
+
+        if (fileMatch) filesChanged = parseInt(fileMatch[1], 10);
+        if (insertMatch) linesAdded = parseInt(insertMatch[1], 10);
+        if (deleteMatch) linesDeleted = parseInt(deleteMatch[1], 10);
       }
-      
-      result.push({
-        hash: commit.hash.substring(0, 7),
-        date: commit.date.substring(0, 10),
-        message: commit.message,
-        author: commit.author,
+
+      commits.push({
+        hash: hash.substring(0, 7),
+        date: date.substring(0, 10),
+        message,
+        author,
         linesAdded,
         linesDeleted,
         filesChanged
       });
     }
+
+    return commits;
   } catch (err) {
     console.error('Error getting commit log:', err.message);
+    return [];
   }
-  
-  return result;
 }
 
 async function getStats(repoPath) {

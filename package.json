@@ -1,5 +1,5 @@
 {
-  "name": "project-dashboard",
+  "name": "dev-dash",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
@@ -15,6 +15,7 @@
   "build": {
     "appId": "com.devdash.app",
     "productName": "DevDash",
+    "icon": "client/public/dashboard.png",
     "directories": {
       "output": "dist"
     },
@@ -39,6 +40,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "ignore": "^7.0.3",
     "openai": "^6.34.0",
     "simple-git": "^3.36.0"
   },

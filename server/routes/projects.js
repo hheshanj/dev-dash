@@ -8,6 +8,7 @@ const { analyzeProject, improveProject } = require('../services/nvidia');
 const { getFileContext } = require('../services/files');
 const { getStats } = require('../services/stats');
 const { getRepoStats, getIssues, getPullRequests } = require('../services/github');
+const { getCommitLog, getCommitDiff, getBranches } = require('../services/commits');
 const {
   upsertProject,
   saveAnalysis,
@@ -15,7 +16,8 @@ const {
   getAllProjects,
   getProjectById,
   updateProjectPin,
-  updateProjectNotes
+  updateProjectNotes,
+  getAnalysisHistory
 } = require('../db/database');
 
 let scanCache = null;
@@ -27,7 +29,6 @@ const COOLDOWN_MS = 60_000;
 
 /**
  * GET /api/projects
- * Scans the filesystem, updates the database, and returns all projects.
  */
 router.get('/', (req, res) => {
   try {
@@ -44,7 +45,6 @@ router.get('/', (req, res) => {
       scanCache = true;
       scanCacheTime = now;
     }
-    
     const projects = getAllProjects();
     res.json(projects);
   } catch (error) {
@@ -55,16 +55,12 @@ router.get('/', (req, res) => {
 
 /**
  * GET /api/projects/:id
- * Returns a specific project and its latest analysis.
  */
 router.get('/:id', (req, res) => {
   const { id } = req.params;
   try {
     const project = getProjectById(id);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-    
+    if (!project) return res.status(404).json({ error: 'Project not found' });
     const analysis = getLatestAnalysis(id);
     res.json({ ...project, analysis });
   } catch (error) {
@@ -75,7 +71,6 @@ router.get('/:id', (req, res) => {
 
 /**
  * POST /api/projects/:id/analyze
- * Triggers a fresh AI analysis for the project.
  */
 router.post('/:id/analyze', async (req, res) => {
   const { id } = req.params;
@@ -87,36 +82,30 @@ router.post('/:id/analyze', async (req, res) => {
 
   try {
     const project = getProjectById(id);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-    
-    if (!fs.existsSync(project.path)) {
-      return res.status(422).json({ error: `Repository path no longer exists: ${project.path}` });
-    }
-    
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (!fs.existsSync(project.path)) return res.status(422).json({ error: `Repository path no longer exists: ${project.path}` });
+
     const gitContext = await getRepoInfo(project.path);
     const chatContext = getChatContext(project.name);
     const fileContext = await getFileContext(project.path);
-    
-    // Pass githubContext to analyzeProject
-    const issues = await getIssues(project.path);
-    const pullRequests = await getPullRequests(project.path);
-    
+
+    const hasGitHub = !!process.env.GITHUB_TOKEN;
+    const issues = hasGitHub ? await getIssues(project.path) : [];
+    const pullRequests = hasGitHub ? await getPullRequests(project.path) : [];
+
     const analysisResult = await analyzeProject(project.name, gitContext, chatContext, fileContext, { issues, pullRequests });
-    
     saveAnalysis(id, analysisResult);
-    
     res.json({ success: true, analysis: analysisResult });
   } catch (error) {
-    // Reset cooldown on failure so user can retry immediately
     analyzeCooldowns.delete(id);
     console.error(`Error in POST /api/projects/${id}/analyze:`, error.message);
-    const status = error.status || 500;
-    res.status(status).json({ error: error.message || 'Analysis failed. Please try again.' });
+    res.status(error.status || 500).json({ error: error.message || 'Analysis failed. Please try again.' });
   }
 });
 
+/**
+ * POST /api/projects/:id/improve
+ */
 const improveCooldowns = new Map();
 
 router.post('/:id/improve', async (req, res) => {
@@ -129,65 +118,111 @@ router.post('/:id/improve', async (req, res) => {
 
   try {
     const project = getProjectById(id);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-    
-    if (!fs.existsSync(project.path)) {
-      return res.status(422).json({ error: `Repository path no longer exists: ${project.path}` });
-    }
-    
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (!fs.existsSync(project.path)) return res.status(422).json({ error: `Repository path no longer exists: ${project.path}` });
+
     const gitContext = await getRepoInfo(project.path);
     const fileContext = await getFileContext(project.path);
-    
-    const codeContext = {
-      tree: fileContext.tree,
-      keyFiles: fileContext.keyFiles,
-      gitContext
-    };
-    
-    const improvementResult = await improveProject(project.name, codeContext);
-    
+    const improvementResult = await improveProject(project.name, { tree: fileContext.tree, keyFiles: fileContext.keyFiles, gitContext });
     res.json({ success: true, improvements: improvementResult });
   } catch (error) {
-    // Reset cooldown on failure so user can retry immediately
     improveCooldowns.delete(id);
     console.error(`Error in POST /api/projects/${id}/improve:`, error.message);
-    const status = error.status || 500;
-    res.status(status).json({ error: error.message || 'Improvement analysis failed. Please try again.' });
+    res.status(error.status || 500).json({ error: error.message || 'Improvement analysis failed.' });
   }
 });
 
+/**
+ * GET /api/projects/:id/stats
+ */
 router.get('/:id/stats', async (req, res) => {
   const { id } = req.params;
-  
   try {
     const project = getProjectById(id);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-    
-    if (!fs.existsSync(project.path)) {
-      return res.status(422).json({ error: `Repository path no longer exists: ${project.path}` });
-    }
-    
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (!fs.existsSync(project.path)) return res.status(422).json({ error: `Repository path no longer exists: ${project.path}` });
+
     const stats = await getStats(project.path);
-    const githubStats = await getRepoStats(project.path);
-    const issues = await getIssues(project.path);
-    const pullRequests = await getPullRequests(project.path);
-    
-    res.json({
-      local: stats,
-      github: githubStats,
-      issues,
-      pullRequests
-    });
+    const hasGitHub = !!process.env.GITHUB_TOKEN;
+    const githubStats = hasGitHub ? await getRepoStats(project.path) : null;
+    const issues = hasGitHub ? await getIssues(project.path) : [];
+    const pullRequests = hasGitHub ? await getPullRequests(project.path) : [];
+
+    res.json({ local: stats, github: githubStats, issues, pullRequests });
   } catch (error) {
     console.error(`Error in GET /api/projects/${id}/stats:`, error.message);
     res.status(500).json({ error: 'Failed to fetch project stats' });
   }
 });
 
+/**
+ * GET /api/projects/:id/commits
+ * Query params: ?limit=50&branch=main
+ */
+router.get('/:id/commits', async (req, res) => {
+  const { id } = req.params;
+  const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+  const branch = req.query.branch || 'HEAD';
+
+  try {
+    const project = getProjectById(id);
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (!fs.existsSync(project.path)) return res.status(422).json({ error: `Repository path no longer exists: ${project.path}` });
+
+    const commits = await getCommitLog(project.path, { limit, branch });
+    res.json(commits);
+  } catch (error) {
+    console.error(`Error in GET /api/projects/${id}/commits:`, error.message);
+    res.status(500).json({ error: 'Failed to fetch commits' });
+  }
+});
+
+/**
+ * GET /api/projects/:id/commits/:hash/diff
+ */
+router.get('/:id/commits/:hash/diff', async (req, res) => {
+  const { id, hash } = req.params;
+
+  try {
+    const project = getProjectById(id);
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (!fs.existsSync(project.path)) return res.status(422).json({ error: `Repository path no longer exists: ${project.path}` });
+
+    // Basic hash validation — alphanumeric only
+    if (!/^[a-f0-9]{4,40}$/i.test(hash)) {
+      return res.status(400).json({ error: 'Invalid commit hash' });
+    }
+
+    const diff = await getCommitDiff(project.path, hash);
+    res.json(diff);
+  } catch (error) {
+    console.error(`Error in GET /api/projects/${id}/commits/${hash}/diff:`, error.message);
+    res.status(500).json({ error: 'Failed to fetch commit diff' });
+  }
+});
+
+/**
+ * GET /api/projects/:id/branches
+ */
+router.get('/:id/branches', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const project = getProjectById(id);
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (!fs.existsSync(project.path)) return res.status(422).json({ error: `Repository path no longer exists: ${project.path}` });
+
+    const branches = await getBranches(project.path);
+    res.json(branches);
+  } catch (error) {
+    console.error(`Error in GET /api/projects/${id}/branches:`, error.message);
+    res.status(500).json({ error: 'Failed to fetch branches' });
+  }
+});
+
+/**
+ * PATCH /api/projects/:id/pin
+ */
 router.patch('/:id/pin', (req, res) => {
   const { id } = req.params;
   const { pinned } = req.body;
@@ -200,6 +235,9 @@ router.patch('/:id/pin', (req, res) => {
   }
 });
 
+/**
+ * PATCH /api/projects/:id/notes
+ */
 router.patch('/:id/notes', (req, res) => {
   const { id } = req.params;
   const { notes } = req.body;
@@ -209,6 +247,20 @@ router.patch('/:id/notes', (req, res) => {
   } catch (error) {
     console.error(`Error in PATCH /api/projects/${id}/notes:`, error.message);
     res.status(500).json({ error: 'Failed to update notes' });
+  }
+});
+
+/**
+ * GET /api/projects/:id/history
+ */
+router.get('/:id/history', (req, res) => {
+  const { id } = req.params;
+  try {
+    const history = getAnalysisHistory(id);
+    res.json(history);
+  } catch (error) {
+    console.error(`Error in GET /api/projects/${id}/history:`, error);
+    res.status(500).json({ error: 'Failed to fetch analysis history' });
   }
 });
 

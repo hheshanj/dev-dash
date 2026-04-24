@@ -30,8 +30,16 @@ db.exec(`
 `);
 
 // Simple schema migrations
-try { db.exec("ALTER TABLE projects ADD COLUMN pinned BOOLEAN DEFAULT 0;"); } catch (e) {}
-try { db.exec("ALTER TABLE projects ADD COLUMN notes TEXT DEFAULT '';"); } catch (e) {}
+const columns = db.prepare("PRAGMA table_info(projects)").all();
+const hasPinned = columns.some(c => c.name === 'pinned');
+const hasNotes = columns.some(c => c.name === 'notes');
+
+if (!hasPinned) {
+  db.exec("ALTER TABLE projects ADD COLUMN pinned BOOLEAN DEFAULT 0;");
+}
+if (!hasNotes) {
+  db.exec("ALTER TABLE projects ADD COLUMN notes TEXT DEFAULT '';");
+}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS settings (
@@ -149,11 +157,25 @@ function updateProjectNotes(id, notes) {
   stmt.run(notes, id);
 }
 
+/**
+ * Fetches all analyses for a given project.
+ */
+function getAnalysisHistory(projectId) {
+  const stmt = db.prepare(`
+    SELECT * FROM analyses 
+    WHERE project_id = ? 
+    ORDER BY created_at DESC
+  `);
+  const rows = stmt.all(projectId);
+  return rows.map(row => ({ ...row, analysis_json: JSON.parse(row.analysis_json) }));
+}
+
 module.exports = {
   db,
   upsertProject,
   saveAnalysis,
   getLatestAnalysis,
+  getAnalysisHistory,
   getAllProjects,
   getProjectById,
   updateProjectPin,

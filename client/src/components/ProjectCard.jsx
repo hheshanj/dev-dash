@@ -8,11 +8,11 @@ function ResumabilityDots({ score }) {
         <div
           key={i}
           className={`w-1.5 h-1.5 rounded-full transition-colors ${
-            i < score ? 'bg-indigo-400' : 'bg-[#2a2d3a]'
+            i < score ? 'bg-accent' : 'bg-[border]'
           }`}
         />
       ))}
-      <span className="ml-1 text-xs text-slate-400">{score}/10</span>
+      <span className="ml-1 text-xs text-slate-500">{score}/10</span>
     </div>
   )
 }
@@ -37,7 +37,7 @@ function HighlightedText({ text, query }) {
   return (
     <span>
       {text.slice(0, idx)}
-      <mark className="bg-indigo-500/30 text-indigo-200 rounded outline-none">{text.slice(idx, idx + query.length)}</mark>
+      <mark className="bg-accent/20 text-accent rounded">{text.slice(idx, idx + query.length)}</mark>
       {text.slice(idx + query.length)}
     </span>
   )
@@ -53,18 +53,18 @@ export default function ProjectCard({ project, isSelected, onSelect, onTogglePin
       onClick={() => onSelect(project)}
       className={`
         w-full text-left p-4 rounded-xl border transition-all duration-200 group
-        bg-[#1a1d27] hover:bg-[#1f2235] hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5
+        bg-white hover:bg-slate-50 hover:border-accent/50 hover:shadow-md
         ${isSelected
-          ? 'border-indigo-500 shadow-lg shadow-indigo-500/10'
-          : 'border-[#2a2d3a]'
+          ? 'border-accent shadow-md shadow-accent/10'
+          : 'border-slate-200'
         }
       `}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
-          <FolderGit2 size={15} className="text-indigo-400 shrink-0" />
-          <h3 className="text-sm font-semibold text-slate-100 truncate group-hover:text-white">
+          <FolderGit2 size={15} className="text-accent shrink-0" />
+          <h3 className="text-sm font-semibold text-slate-800 truncate group-hover:text-slate-900">
             <HighlightedText text={project.name} query={searchQuery} />
           </h3>
         </div>
@@ -74,7 +74,7 @@ export default function ProjectCard({ project, isSelected, onSelect, onTogglePin
               e.stopPropagation();
               onTogglePin(project.id, !project.pinned);
             }}
-            className={`p-1 rounded transition-colors ${project.pinned ? 'text-amber-400 hover:text-amber-300 bg-amber-400/10' : 'text-slate-600 hover:text-indigo-400 hover:bg-[#2a2d3a]'}`}
+            className={`p-1 rounded transition-colors ${project.pinned ? 'text-amber-500 hover:text-amber-600 bg-amber-50' : 'text-slate-400 hover:text-accent hover:bg-slate-100'}`}
             title={project.pinned ? "Unpin project" : "Pin project"}
           >
             <Star size={13} fill={project.pinned ? 'currentColor' : 'none'} />
@@ -84,7 +84,7 @@ export default function ProjectCard({ project, isSelected, onSelect, onTogglePin
       </div>
 
       {/* Summary or empty state */}
-      <p className="text-xs text-slate-400 leading-relaxed line-clamp-2 mb-3 min-h-[2.5rem]">
+      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-3 min-h-[2.5rem]">
         {analysis?.summary || 'No analysis yet. Click to analyze this project.'}
       </p>
 
@@ -93,11 +93,11 @@ export default function ProjectCard({ project, isSelected, onSelect, onTogglePin
         {score !== null ? (
           <ResumabilityDots score={score} />
         ) : (
-          <span className="text-xs text-slate-600">Not analyzed</span>
+          <span className="text-xs text-slate-400">Not analyzed</span>
         )}
         <div className="flex items-center gap-1 text-xs">
-          <Clock size={11} className={!project.last_analyzed ? 'text-slate-600' : 'text-slate-500'} />
-          <span className={!project.last_analyzed ? 'text-slate-600 italic' : 'text-slate-500'}>{timeAgo(project.last_analyzed)}</span>
+          <Clock size={11} className={!project.last_analyzed ? 'text-slate-400' : 'text-slate-500'} />
+          <span className={!project.last_analyzed ? 'text-slate-400 italic' : 'text-slate-500'}>{timeAgo(project.last_analyzed)}</span>
         </div>
       </div>
     </button>

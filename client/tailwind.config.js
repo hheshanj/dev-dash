@@ -8,11 +8,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface: '#0f1117',
-        card:    '#1a1d27',
-        border:  '#2a2d3a',
-        accent:  '#6366f1',
-        'accent-hover': '#4f52c9',
+        surface: '#f8fafc',
+        card:    '#ffffff',
+        border:  'rgba(148, 163, 184, 0.3)',
+        accent:  '#2563eb',
+        'accent-hover': '#1d4ed8',
+        'accent-glow': '#3b82f6',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

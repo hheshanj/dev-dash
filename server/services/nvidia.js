@@ -63,10 +63,10 @@ ${gitContext.diff || 'No uncommitted changes.'}`;
   if (fileContext && fileContext.tree) {
     codeSection = `
 --- Project Structure ---
-${JSON.stringify(fileContext.tree, null, 2).substring(0, 2000)}
+${JSON.stringify(fileContext.tree, null, 2).substring(0, 1000)}
 
 --- Key Files ---
-${fileContext.keyFiles?.map(f => `=== ${f.path} ===\n${f.content.substring(0, 3000)}`).join('\n\n') || 'No key files found.'}`;
+${fileContext.keyFiles?.map(f => `=== ${f.path} ===\n${f.content.substring(0, 1500)}`).join('\n\n') || 'No key files found.'}`;
   }
 
   const userPrompt = `

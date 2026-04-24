@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 // Max characters of chat content to return (to avoid overwhelming AI context)
-const MAX_CHAT_CHARS = 8000;
+const MAX_CHAT_CHARS = 4000;
 // How many recent conversation sessions to scan
-const MAX_SESSIONS = 5;
+const MAX_SESSIONS = 3;
 
 /**
  * Reads a single artifact file from a session folder.

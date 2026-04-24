@@ -111,35 +111,35 @@ export default function Dashboard() {
   }, [projects, searchQuery, statusFilter])
 
   return (
-    <div className="flex flex-col h-screen bg-[#0f1117]">
+    <div className="flex flex-col h-screen bg-slate-100">
       {/* Top Nav */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-[#2a2d3a] shrink-0">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white shrink-0">
         <div className="flex items-center gap-2.5">
-          <LayoutDashboard size={20} className="text-indigo-400" />
-          <h1 className="text-base font-bold text-white tracking-tight">devdash</h1>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-[#2a2d3a] text-slate-400 font-medium">
+          <img src="/dashboard.png" alt="DevDash" className="w-6 h-6 object-contain" />
+          <h1 className="text-base font-bold text-slate-800 tracking-tight">DevDash</h1>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium">
             {filteredProjects.length}{filteredProjects.length !== projects.length ? ` / ${projects.length}` : ''} repos
           </span>
         </div>
         <div className="flex items-center gap-3">
           {/* Search */}
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search repos…"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-1.5 rounded-lg bg-[#1a1d27] border border-[#2a2d3a] text-sm text-slate-300 placeholder-slate-600 focus:outline-none focus:border-indigo-500 w-52 transition-colors"
+              className="pl-9 pr-4 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-accent w-52 transition-colors"
             />
           </div>
           {/* Status Filter */}
           <div className="flex items-center gap-1">
-            <SlidersHorizontal size={14} className="text-slate-500" />
+            <SlidersHorizontal size={14} className="text-slate-400" />
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="bg-[#1a1d27] border border-[#2a2d3a] text-sm text-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500 transition-colors capitalize"
+              className="bg-slate-50 border border-slate-200 text-sm text-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:border-accent transition-colors capitalize"
             >
               {STATUS_FILTERS.map(s => (
                 <option key={s} value={s} className="capitalize">{s === 'all' ? 'All statuses' : s}</option>
@@ -150,7 +150,7 @@ export default function Dashboard() {
           <button
             onClick={loadProjects}
             disabled={isLoadingList}
-            className="p-1.5 rounded-lg hover:bg-[#2a2d3a] text-slate-500 hover:text-slate-300 transition-colors disabled:opacity-40"
+            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors disabled:opacity-40"
             title="Refresh project list"
           >
             <RefreshCw size={15} className={isLoadingList ? 'animate-spin' : ''} />
@@ -158,7 +158,7 @@ export default function Dashboard() {
           {/* Settings */}
           <button
             onClick={() => setShowSettings(true)}
-            className="p-1.5 rounded-lg hover:bg-[#2a2d3a] text-slate-500 hover:text-slate-300 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
             title="Settings"
           >
             <Settings size={15} />
@@ -167,16 +167,16 @@ export default function Dashboard() {
       </header>
       
       {/* Global Stats Bar */}
-      <div className="flex items-center justify-center gap-4 py-2 bg-[#1a1d27] border-b border-[#2a2d3a] shrink-0 text-xs text-slate-400">
-        <span><strong className="text-white">{projects.length}</strong> repos</span>
-        <span className="w-1 h-1 rounded-full bg-[#2a2d3a]" />
-        <span><strong className="text-emerald-400">{globalStats.active}</strong> active</span>
-        <span className="w-1 h-1 rounded-full bg-[#2a2d3a]" />
-        <span><strong className="text-amber-400">{globalStats.stalled}</strong> stalled</span>
-        <span className="w-1 h-1 rounded-full bg-[#2a2d3a]" />
-        <span><strong className="text-indigo-400">{globalStats.completed}</strong> completed</span>
-        <span className="w-1 h-1 rounded-full bg-[#2a2d3a]" />
-        <span>Avg resumability: <strong className="text-white">{globalStats.avgScore}</strong>/10</span>
+      <div className="flex items-center justify-center gap-4 py-2 bg-white border-b border-slate-200 shrink-0 text-xs text-slate-500">
+        <span><strong className="text-slate-700">{projects.length}</strong> repos</span>
+        <span className="w-1 h-1 rounded-full bg-slate-300" />
+        <span><strong className="text-emerald-600">{globalStats.active}</strong> active</span>
+        <span className="w-1 h-1 rounded-full bg-slate-300" />
+        <span><strong className="text-amber-600">{globalStats.stalled}</strong> stalled</span>
+        <span className="w-1 h-1 rounded-full bg-slate-300" />
+        <span><strong className="text-accent">{globalStats.completed}</strong> completed</span>
+        <span className="w-1 h-1 rounded-full bg-slate-300" />
+        <span>Avg resumability: <strong className="text-slate-700">{globalStats.avgScore}</strong>/10</span>
       </div>
 
       {/* Main Layout */}
@@ -195,7 +195,7 @@ export default function Dashboard() {
             {isLoadingList && (
               <div className={`grid gap-3 ${selectedProject ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-32 rounded-xl bg-[#1a1d27] border border-[#2a2d3a] animate-pulse" />
+                  <div key={i} className="h-32 rounded-xl bg-white border border-slate-200 animate-pulse" />
                 ))}
               </div>
             )}
@@ -203,25 +203,25 @@ export default function Dashboard() {
             {/* First-run empty state */}
             {!isLoadingList && projects.length === 0 && !listError && (
               <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
-                <div className="max-w-md w-full p-6 bg-[#1a1d27] border border-[#2a2d3a] rounded-xl text-left shadow-lg">
-                  <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2 mb-4">
+                <div className="max-w-md w-full p-6 bg-white border border-slate-200 rounded-xl text-left shadow-sm">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
                     <span className="text-2xl">📁</span> No repositories found
                   </h3>
-                  <p className="text-slate-400 text-sm mb-4">
-                    Make sure your <code className="bg-[#0f1117] px-1.5 py-0.5 rounded text-indigo-300">.env</code> is properly configured:
+                  <p className="text-slate-500 text-sm mb-4">
+                    Make sure your <code className="bg-slate-100 px-1.5 py-0.5 rounded text-accent">.env</code> is properly configured:
                   </p>
-                  <ul className="text-sm text-slate-300 space-y-2 mb-6">
+                  <ul className="text-sm text-slate-600 space-y-2 mb-6">
                     <li className="flex items-start gap-2">
-                      <span className="text-indigo-400 mt-0.5">•</span>
-                      <span><code className="text-indigo-300">REPOS_PATH</code> points to your main development folder</span>
+                      <span className="text-accent mt-0.5">•</span>
+                      <span><code className="text-accent">REPOS_PATH</code> points to your main development folder</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-indigo-400 mt-0.5">•</span>
-                      <span>The folder contains actual <code className="text-emerald-400">.git</code> directories</span>
+                      <span className="text-accent mt-0.5">•</span>
+                      <span>The folder contains actual <code className="text-emerald-600">.git</code> directories</span>
                     </li>
                   </ul>
                   <div className="flex justify-end gap-3">
-                    <button onClick={loadProjects} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors">
+                    <button onClick={loadProjects} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-colors">
                       <RefreshCw size={14} className={isLoadingList ? 'animate-spin' : ''} /> Retry Scan
                     </button>
                   </div>
@@ -232,7 +232,7 @@ export default function Dashboard() {
             {/* Empty filtered state */}
             {!isLoadingList && projects.length > 0 && filteredProjects.length === 0 && !listError && (
               <div className="flex flex-col items-center justify-center py-24 text-center">
-                <Search size={36} className="text-slate-700 mb-3" />
+                <Search size={36} className="text-slate-300 mb-3" />
                 <p className="text-slate-500 text-sm">No repos match your filter.</p>
               </div>
             )}
@@ -259,9 +259,9 @@ export default function Dashboard() {
         {selectedProject && (
           <div className="flex-1 relative overflow-hidden">
             {isLoadingDetail ? (
-              <div className="h-full flex items-center justify-center bg-[#1a1d27] border-l border-[#2a2d3a]">
+              <div className="h-full flex items-center justify-center bg-white border-l border-slate-200">
                 <div className="flex flex-col items-center gap-3">
-                  <RefreshCw size={24} className="text-indigo-400 animate-spin" />
+                  <RefreshCw size={24} className="text-accent animate-spin" />
                   <p className="text-sm text-slate-500">Loading project…</p>
                 </div>
               </div>

@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const ignore = require('ignore');
 
 const MAX_FILE_SIZE = 50_000;
+const MAX_KEY_FILES = 8;
 const KEY_FILES = [
   'README.md', 'README.txt', 'README',
   'package.json', 'pyproject.toml', 'setup.py', 'requirements.txt', 'Cargo.toml',
@@ -13,46 +15,23 @@ const KEY_FILES = [
   'src/App.jsx', 'src/App.tsx', 'src/main.jsx', 'src/main.tsx'
 ];
 
-function parseGitignore(repoPath) {
-  const patterns = [];
+function getIgnoreFilter(repoPath) {
+  const ig = ignore();
   const gitignorePath = path.join(repoPath, '.gitignore');
   
   try {
     if (fs.existsSync(gitignorePath)) {
       const content = fs.readFileSync(gitignorePath, 'utf-8');
-      const lines = content.split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed && !trimmed.startsWith('#')) {
-          patterns.push(trimmed);
-        }
-      }
+      ig.add(content);
     }
   } catch (err) {
     console.error('Error reading .gitignore:', err.message);
   }
   
-  return patterns;
+  return ig;
 }
 
-function matchesIgnore(filePath, basePath, patterns) {
-  const relativePath = path.relative(basePath, filePath);
-  const normalized = relativePath.replace(/\\/g, '/');
-  
-  for (const pattern of patterns) {
-    if (pattern.startsWith('!')) continue;
-    
-    if (pattern.includes('/')) {
-      if (normalized.startsWith(pattern.replace(/\/$/, ''))) return true;
-    } else {
-      const fileName = path.basename(normalized);
-      if (fileName === pattern || fileName.match(new RegExp('^' + pattern.replace(/\*/g, '.*') + '$'))) return true;
-    }
-  }
-  return false;
-}
-
-function getFileTree(dirPath, basePath, patterns, maxDepth = 3, currentDepth = 0) {
+function getFileTree(dirPath, basePath, ig, maxDepth = 3, currentDepth = 0) {
   if (currentDepth > maxDepth) return null;
   
   const items = [];
@@ -62,17 +41,18 @@ function getFileTree(dirPath, basePath, patterns, maxDepth = 3, currentDepth = 0
     
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
+      const relativePath = path.relative(basePath, fullPath);
       
       if (entry.name === '.git') continue;
-      if (matchesIgnore(fullPath, basePath, patterns)) continue;
+      if (ig.ignores(relativePath)) continue;
       
       if (entry.isDirectory()) {
-        const children = getFileTree(fullPath, basePath, patterns, maxDepth, currentDepth + 1);
+        const children = getFileTree(fullPath, basePath, ig, maxDepth, currentDepth + 1);
         if (children && children.length > 0) {
-          items.push({ type: 'directory', name: entry.name, path: path.relative(basePath, fullPath), children });
+          items.push({ type: 'directory', name: entry.name, path: relativePath, children });
         }
       } else {
-        items.push({ type: 'file', name: entry.name, path: path.relative(basePath, fullPath) });
+        items.push({ type: 'file', name: entry.name, path: relativePath });
       }
     }
   } catch (err) {
@@ -82,7 +62,7 @@ function getFileTree(dirPath, basePath, patterns, maxDepth = 3, currentDepth = 0
   return items;
 }
 
-function findKeyFiles(dirPath) {
+function findKeyFiles(dirPath, ig) {
   const found = [];
   const visited = new Set();
   
@@ -96,12 +76,15 @@ function findKeyFiles(dirPath) {
         if (entry.name === '.git') continue;
         
         const fullPath = path.join(currentDir, entry.name);
+        const relativePath = path.relative(dirPath, fullPath);
         
         if (visited.has(fullPath)) continue;
         visited.add(fullPath);
         
+        if (ig.ignores(relativePath)) continue;
+        
         if (targetNames.includes(entry.name)) {
-          found.push({ name: entry.name, path: path.relative(dirPath, fullPath), fullPath });
+          found.push({ name: entry.name, path: relativePath, fullPath });
         }
         
         if (entry.isDirectory()) {
@@ -130,9 +113,9 @@ function readFileContent(filePath) {
 }
 
 async function getFileContext(repoPath) {
-  const patterns = parseGitignore(repoPath);
-  const fileTree = getFileTree(repoPath, repoPath, patterns);
-  const keyFiles = findKeyFiles(repoPath);
+  const ig = getIgnoreFilter(repoPath);
+  const fileTree = getFileTree(repoPath, repoPath, ig);
+  const keyFiles = findKeyFiles(repoPath, ig).slice(0, MAX_KEY_FILES);
   
   const keyFileContents = [];
   for (const file of keyFiles) {

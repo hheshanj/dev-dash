@@ -29,6 +29,7 @@ function createWindow() {
       contextIsolation: true,
     },
     title: 'DevDash',
+    icon: path.join(__dirname, 'client/public/dashboard.png'),
     backgroundColor: '#0f1117'
   });
 

@@ -45,62 +45,62 @@ export default function SettingsModal({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-[#0f1117]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#1a1d27] border border-[#2a2d3a] rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
         
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#2a2d3a]">
-          <h2 className="text-lg font-bold text-slate-100">Global Settings</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#2a2d3a] text-slate-500 hover:text-slate-300 transition-colors">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <h2 className="text-lg font-bold text-slate-800">Global Settings</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
             <X size={18} />
           </button>
         </div>
 
         {loading ? (
           <div className="p-12 flex justify-center">
-            <Loader2 className="animate-spin text-indigo-500" size={24} />
+            <Loader2 className="animate-spin text-accent" size={24} />
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {status && (
-              <div className={`p-3 rounded-lg border text-sm ${status.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+              <div className={`p-3 rounded-lg border text-sm ${status.type === 'error' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600'}`}>
                 {status.message}
               </div>
             )}
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-300 mb-1.5">
-                <Server size={14} className="text-indigo-400" /> Workspace Directory <span className="text-red-400">*</span>
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5">
+                <Server size={14} className="text-accent" /> Workspace Directory <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.REPOS_PATH}
                 onChange={(e) => setFormData({ ...formData, REPOS_PATH: e.target.value })}
-                className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all font-mono"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all font-mono"
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-300 mb-1.5">
-                <KeySquare size={14} className="text-indigo-400" /> AI API Key (Nvidia NIM)
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5">
+                <KeySquare size={14} className="text-accent" /> AI API Key (Nvidia NIM)
               </label>
               <input
                 type="password"
                 value={formData.NVIDIA_API_KEY}
                 onChange={(e) => setFormData({ ...formData, NVIDIA_API_KEY: e.target.value })}
-                className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all font-mono placeholder-slate-600"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all font-mono placeholder-slate-400"
               />
               <p className="text-xs text-slate-500 mt-1">Leave as stars to keep the existing key.</p>
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-300 mb-1.5">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5">
                 <GitBranch size={14} className="text-slate-400" /> GitHub Personal Access Token
               </label>
               <input
                 type="password"
                 value={formData.GITHUB_TOKEN}
                 onChange={(e) => setFormData({ ...formData, GITHUB_TOKEN: e.target.value })}
-                className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all font-mono placeholder-slate-600"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all font-mono placeholder-slate-400"
               />
               <p className="text-xs text-slate-500 mt-1">Leave as stars to keep existing. Clear field completely to remove.</p>
             </div>
@@ -109,14 +109,14 @@ export default function SettingsModal({ onClose }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-white text-sm font-medium transition-colors disabled:opacity-50"
               >
                 {saving ? (
                   <Loader2 size={16} className="animate-spin" />

@@ -26,8 +26,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-[#0f1117] flex items-center justify-center">
-        <Loader2 className="animate-spin text-indigo-500" size={32} />
+      <div className="h-screen bg-surface flex items-center justify-center">
+        <Loader2 className="animate-spin text-accent" size={32} />
       </div>
     )
   }
