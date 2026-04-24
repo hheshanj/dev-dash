@@ -8,7 +8,7 @@ function ResumabilityDots({ score }) {
         <div
           key={i}
           className={`w-1.5 h-1.5 rounded-full transition-colors ${
-            i < score ? 'bg-accent' : 'bg-[border]'
+            i < score ? 'bg-accent' : 'bg-slate-200'
           }`}
         />
       ))}

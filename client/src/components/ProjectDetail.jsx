@@ -168,6 +168,13 @@ function ImprovementsTab({ improvements, loading, onCheck }) {
         {isChecking ? 'Analyzing...' : 'Check for Improvements'}
       </button>
 
+      {!loading && !improvements && (
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <Wrench size={32} className="text-slate-300 mb-2" />
+          <p className="text-sm text-slate-500">Click the button above to analyze this project for potential improvements.</p>
+        </div>
+      )}
+
       {loading && <SkeletonBlock className="w-full h-32" />}
 
       {improvements && (
@@ -359,11 +366,11 @@ ${localAnalysis.next_suggested_step || 'None'}
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-2">
-          <button onClick={handleAnalyze} disabled={isAnalyzing} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors">
+          <button onClick={handleAnalyze} disabled={isAnalyzing} aria-label={isAnalyzing ? 'Analyzing project' : 'Re-analyze project'} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors">
             <RefreshCw size={13} className={isAnalyzing ? 'animate-spin' : ''} />
             {isAnalyzing ? 'Analyzing...' : 'Re-Analyze'}
           </button>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"><X size={16} /></button>
+          <button onClick={onClose} aria-label="Close project details" className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"><X size={16} /></button>
         </div>
       </div>
 

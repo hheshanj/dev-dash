@@ -127,6 +127,7 @@ export default function Dashboard() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
+              aria-label="Search repositories"
               placeholder="Search repos…"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}

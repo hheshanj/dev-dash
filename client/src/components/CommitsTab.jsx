@@ -378,7 +378,7 @@ export default function CommitsTab({ projectId }) {
         )}
         {!loading && !error && commits.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <GitCommitHorizontal size={36} className="text-slate-200 mb-3" />
+            <GitCommitHorizontal size={36} className="text-slate-300 mb-3" />
             <p className="text-slate-400 text-sm">No commits found</p>
           </div>
         )}

@@ -68,10 +68,11 @@ export default function SettingsModal({ onClose }) {
             )}
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5">
+              <label htmlFor="repos-path" className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5">
                 <Server size={14} className="text-accent" /> Workspace Directory <span className="text-red-500">*</span>
               </label>
               <input
+                id="repos-path"
                 type="text"
                 value={formData.REPOS_PATH}
                 onChange={(e) => setFormData({ ...formData, REPOS_PATH: e.target.value })}
@@ -80,10 +81,11 @@ export default function SettingsModal({ onClose }) {
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5">
+              <label htmlFor="nvidia-api-key" className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5">
                 <KeySquare size={14} className="text-accent" /> AI API Key (Nvidia NIM)
               </label>
               <input
+                id="nvidia-api-key"
                 type="password"
                 value={formData.NVIDIA_API_KEY}
                 onChange={(e) => setFormData({ ...formData, NVIDIA_API_KEY: e.target.value })}
@@ -93,10 +95,11 @@ export default function SettingsModal({ onClose }) {
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5">
+              <label htmlFor="github-token" className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5">
                 <GitBranch size={14} className="text-slate-400" /> GitHub Personal Access Token
               </label>
               <input
+                id="github-token"
                 type="password"
                 value={formData.GITHUB_TOKEN}
                 onChange={(e) => setFormData({ ...formData, GITHUB_TOKEN: e.target.value })}
