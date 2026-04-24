@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo } from 'react'
-import { Search, SlidersHorizontal, LayoutDashboard, RefreshCw, Settings } from 'lucide-react'
+import { Search, SlidersHorizontal, RefreshCw, Settings } from 'lucide-react'
 import { fetchProjects, fetchProject, togglePin } from '../api/projects'
 import ProjectCard from '../components/ProjectCard'
 import ProjectDetail from '../components/ProjectDetail'
@@ -151,18 +151,18 @@ export default function Dashboard() {
           <button
             onClick={loadProjects}
             disabled={isLoadingList}
+            aria-label="Refresh project list"
             className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors disabled:opacity-40"
-            title="Refresh project list"
           >
-            <RefreshCw size={15} className={isLoadingList ? 'animate-spin' : ''} />
+            <RefreshCw size={16} className={isLoadingList ? 'animate-spin' : ''} />
           </button>
           {/* Settings */}
           <button
             onClick={() => setShowSettings(true)}
+            aria-label="Open settings"
             className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
-            title="Settings"
           >
-            <Settings size={15} />
+            <Settings size={16} />
           </button>
         </div>
       </header>
